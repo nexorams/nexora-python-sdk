@@ -8,10 +8,38 @@ Programmatically build, provision, and automate multi-tenant management systems 
 
 ## Installation
 
-Install the official package from PyPI:
+The official Nexora Python SDK is published on [PyPI](https://pypi.org/project/nexorams/) (stable **v1.0.0**).
+
+Install the package via standard module execution:
+
+```bash
+python -m pip install nexorams
+```
+
+Or using standard pip shorthand:
 
 ```bash
 pip install nexorams
+```
+
+### Virtual Environment (Recommended)
+
+We recommend installing `nexorams` inside an isolated Python virtual environment:
+
+```bash
+# 1. Create a virtual environment
+python -m venv .venv
+
+# 2. Activate the virtual environment
+# On macOS / Linux:
+source .venv/bin/activate
+# On Windows (PowerShell):
+.venv\Scripts\Activate.ps1
+# On Windows (Command Prompt):
+.venv\Scripts\activate.bat
+
+# 3. Install nexorams
+python -m pip install nexorams
 ```
 
 ---
@@ -369,4 +397,3 @@ org = nexora.organizations.create(
 ## License
 
 MIT © [Nexora Technologies](https://nexoragms.com)
-# nexora-python-sdk

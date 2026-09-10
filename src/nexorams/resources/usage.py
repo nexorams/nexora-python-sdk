@@ -30,6 +30,8 @@ class UsageResource:
 
         Returns:
             Dictionary with totalRequests, successCount, clientErrorCount, quota, and endpoints breakdown.
+            For accounts with unlimited API requests, `quota.limit` and `quota.remaining` are `None` (null),
+            and `quota.unlimited` is True.
         """
         params: dict[str, Any] = {}
         if period is not None:
@@ -43,5 +45,7 @@ class UsageResource:
 
         Returns:
             Dictionary with project ID, name, slug, environment (TEST or LIVE), tier, and limits.
+            For unlimited plan tiers, numeric limits in `limits` (e.g. `moduleCreditLimit`,
+            `monthlyApiRequests`) are `None` (null), with corresponding `*Unlimited` flags set to True.
         """
         return self._http.get("/project")

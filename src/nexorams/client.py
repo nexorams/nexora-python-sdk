@@ -18,6 +18,11 @@ from .resources.subscriptions import SubscriptionsResource
 from .resources.usage import UsageResource
 from .resources.users import UsersResource
 from .resources.webhooks import WebhooksResource
+from .resources.school import SchoolResource
+from .resources.hospital import HospitalResource
+from .resources.hotel import HotelResource
+from .resources.pharmacy import PharmacyResource
+from .resources.company import CompanyResource
 
 
 def _mask_api_key(key: str) -> str:
@@ -110,6 +115,13 @@ class Nexora:
         self.webhooks = WebhooksResource(self._http)
         self.deliveries = WebhookDeliveriesResource(self._http)
         self.usage = UsageResource(self._http)
+
+        # Sector-specific resources
+        self.school = SchoolResource(self._http)
+        self.hospital = HospitalResource(self._http)
+        self.hotel = HotelResource(self._http)
+        self.pharmacy = PharmacyResource(self._http)
+        self.company = CompanyResource(self._http)
 
     @property
     def api_key(self) -> str:

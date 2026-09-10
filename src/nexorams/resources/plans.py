@@ -34,6 +34,8 @@ class PlansResource:
 
         Returns:
             List of plan definitions with pricing, tiers, and resource quotas.
+            For unlimited plan tiers, integer limits in `limits` are `None` (null), with
+            corresponding `*Unlimited` flags set to True.
         """
         params: dict[str, Any] = {}
         resolved_type = organization_type or sector

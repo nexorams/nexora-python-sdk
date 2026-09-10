@@ -27,6 +27,7 @@ from .resources.subscriptions import SubscriptionsResource
 from .resources.usage import UsageResource
 from .resources.users import UsersResource
 from .resources.webhooks import WebhooksResource
+from .types import LimitSummary, ModuleCreditSummary, PlanLimits
 
 __all__ = [
     "__version__",
@@ -50,4 +51,7 @@ __all__ = [
     "WebhooksResource",
     "WebhookDeliveriesResource",
     "UsageResource",
+    "LimitSummary",
+    "PlanLimits",
+    "ModuleCreditSummary",
 ]
