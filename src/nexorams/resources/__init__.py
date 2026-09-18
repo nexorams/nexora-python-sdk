@@ -9,6 +9,11 @@ from .subscriptions import SubscriptionsResource
 from .usage import UsageResource
 from .users import UsersResource
 from .webhooks import WebhooksResource
+from .school import SchoolResource
+from .hospital import HospitalResource
+from .hotel import HotelResource
+from .pharmacy import PharmacyResource
+from .company import CompanyResource
 
 __all__ = [
     "OrganizationsResource",
@@ -20,4 +25,10 @@ __all__ = [
     "WebhooksResource",
     "WebhookDeliveriesResource",
     "UsageResource",
+    "SchoolResource",
+    "HospitalResource",
+    "HotelResource",
+    "PharmacyResource",
+    "CompanyResource",
 ]
+

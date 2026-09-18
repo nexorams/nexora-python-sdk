@@ -27,6 +27,11 @@ from .resources.subscriptions import SubscriptionsResource
 from .resources.usage import UsageResource
 from .resources.users import UsersResource
 from .resources.webhooks import WebhooksResource
+from .resources.school import SchoolResource
+from .resources.hospital import HospitalResource
+from .resources.hotel import HotelResource
+from .resources.pharmacy import PharmacyResource
+from .resources.company import CompanyResource
 from .types import LimitSummary, ModuleCreditSummary, PlanLimits
 
 __all__ = [
@@ -51,6 +56,11 @@ __all__ = [
     "WebhooksResource",
     "WebhookDeliveriesResource",
     "UsageResource",
+    "SchoolResource",
+    "HospitalResource",
+    "HotelResource",
+    "PharmacyResource",
+    "CompanyResource",
     "LimitSummary",
     "PlanLimits",
     "ModuleCreditSummary",
