@@ -41,11 +41,10 @@ class UsageResource:
         return self._http.get("/usage", params=params)
 
     def get_project(self) -> dict[str, Any]:
-        """Retrieve authenticated developer project profile, environment, and tier quota limits.
+        """Retrieve authenticated developer project metadata, environment, status, and sector binding.
 
         Returns:
-            Dictionary with project ID, name, slug, environment (TEST or LIVE), tier, and limits.
-            For unlimited plan tiers, numeric limits in `limits` (e.g. `moduleCreditLimit`,
-            `monthlyApiRequests`) are `None` (null), with corresponding `*Unlimited` flags set to True.
+            Dictionary with project ID, name, slug, description, status, environment
+            (TEST or LIVE), organizationSector, and timestamps.
         """
         return self._http.get("/project")

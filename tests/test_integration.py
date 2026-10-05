@@ -164,7 +164,7 @@ class TestSandboxDeveloperJourneyMock:
                 "Authorization": f"Bearer {client.api_key}",
                 "Content-Type": "application/json",
                 "Accept": "application/json",
-                "User-Agent": "nexorams-python/1.0.0",
+                "User-Agent": "nexorams-python/1.0.2",
             },
         )
 

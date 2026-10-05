@@ -59,3 +59,11 @@ class ModulesResource:
             f"/organizations/{organization_id}/modules",
             json_data={"modules": list(modules)},
         )
+
+    def project_modules(self) -> dict[str, Any]:
+        """List active project modules, capabilities, and sector bindings."""
+        return self._http.get("/project/modules")
+
+    def credits(self) -> dict[str, Any]:
+        """Retrieve the developer project's module credit summary."""
+        return self._http.get("/project/module-credits")

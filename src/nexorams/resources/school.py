@@ -77,9 +77,11 @@ class _Classes:
     def __init__(self, http: HttpClient) -> None:
         self._http = http
 
-    def list(self, **kwargs: Any) -> Dict[str, Any]:
-        """List school classes."""
-        return self._http.get("/school/classes", **kwargs)
+    def list(self, page: int = 1, limit: int = 20, **kwargs: Any) -> Dict[str, Any]:
+        """List school classes with pagination."""
+        params: Dict[str, Any] = {"page": page, "limit": limit}
+        params.update(kwargs)
+        return self._http.get("/school/classes", params=params)
 
     def create(self, data: Dict[str, Any], **kwargs: Any) -> Dict[str, Any]:
         """Create a new class."""

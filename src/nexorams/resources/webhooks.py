@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import re
 import time
 from typing import TYPE_CHECKING, Any, Optional, Sequence, Union
 
@@ -130,9 +131,8 @@ class WebhooksResource:
         Matches the canonical Nexora backend WebhookSigningService algorithm.
         Uses HMAC-SHA256 and constant-time string comparison (hmac.compare_digest).
 
-        Supports:
-        1. Standard Nexora signature format: "t=1700000000,v1=abcdef..."
-        2. Direct HMAC hash: "v1=abcdef..." or raw hex
+        Replay-safe mode requires "t=1700000000,v1=abcdef...". Legacy direct
+        HMAC hashes are accepted only when tolerance_seconds is explicitly 0.
 
         Args:
             payload: Raw request body as bytes or string.
@@ -178,10 +178,14 @@ class WebhooksResource:
         else:
             signature_hash = header.strip()
 
-        if not signature_hash:
+        if not signature_hash or re.fullmatch(r"[0-9a-fA-F]{64}", signature_hash) is None:
             return False
 
         # Verify timestamp tolerance window to protect against replay attacks
+        if tolerance_seconds < 0 or (tolerance_seconds > 0 and timestamp is None):
+            return False
+        if timestamp is not None and timestamp <= 0:
+            return False
         if timestamp is not None and tolerance_seconds > 0:
             now = int(time.time())
             if abs(now - timestamp) > tolerance_seconds:
@@ -196,10 +200,11 @@ class WebhooksResource:
             if hmac.compare_digest(signature_hash.lower(), expected_hash.lower()):
                 return True
 
-        # 2. Direct fallback HMAC over raw payload without timestamp prefix
-        direct_data = payload_str.encode("utf-8")
-        direct_expected_hash = hmac.new(secret_bytes, direct_data, hashlib.sha256).hexdigest()
-        if hmac.compare_digest(signature_hash.lower(), direct_expected_hash.lower()):
-            return True
+        # 2. Explicit legacy mode: direct HMAC over the raw payload.
+        if timestamp is None and tolerance_seconds == 0:
+            direct_data = payload_str.encode("utf-8")
+            direct_expected_hash = hmac.new(secret_bytes, direct_data, hashlib.sha256).hexdigest()
+            if hmac.compare_digest(signature_hash.lower(), direct_expected_hash.lower()):
+                return True
 
         return False

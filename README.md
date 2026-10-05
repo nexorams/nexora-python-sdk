@@ -8,7 +8,7 @@ Programmatically build, provision, and automate multi-tenant management systems 
 
 ## Installation
 
-The official Nexora Python SDK is published on [PyPI](https://pypi.org/project/nexorams/) (stable **v1.0.0**).
+The official Nexora Python SDK is published on [PyPI](https://pypi.org/project/nexorams/) (stable **v1.0.2**).
 
 Install the package via standard module execution:
 
@@ -255,7 +255,7 @@ Register HTTPS webhook receivers, rotate secrets, and cryptographically verify i
 # Register an endpoint
 webhook = nexora.webhooks.create(
     url="https://api.example.com/webhooks/nexora",
-    events=["organization.provisioned", "user.created", "subscription.updated"],
+    events=["organization.provisioned", "user.created", "domain.verified"],
     description="Primary production webhook receiver",
 )
 
@@ -318,9 +318,9 @@ Monitor API telemetry, rate limit hits, and developer project quotas.
 usage = nexora.usage.summary(period="2026-09")
 print(f"Total API Requests: {usage['totalRequests']}")
 
-# Project profile & limits
+# Project metadata
 project = nexora.usage.get_project()
-print(f"Tier: {project['tier']}, Limits: {project['limits']}")
+print(f"Project: {project['name']} ({project['environment']})")
 ```
 
 ---

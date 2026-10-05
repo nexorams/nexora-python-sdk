@@ -66,7 +66,7 @@ class UsersResource:
         page: Optional[int] = None,
         limit: Optional[int] = None,
         **kwargs: Any,
-    ) -> list[dict[str, Any]]:
+    ) -> dict[str, Any]:
         """List safe user memberships in a tenant organization.
 
         Args:
@@ -76,7 +76,7 @@ class UsersResource:
             limit: Maximum records to return.
 
         Returns:
-            List of tenant users in the organization.
+            Paginated dictionary containing tenant users and pagination metadata.
         """
         params: dict[str, Any] = {}
         if role is not None:

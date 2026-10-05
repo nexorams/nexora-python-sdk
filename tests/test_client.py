@@ -71,6 +71,15 @@ class TestClientInitialization:
         assert client.environment == "live"
         assert client.base_url == "https://api.nexoragms.com/developer/v1"
 
+    def test_rejects_environment_that_contradicts_key_prefix(self) -> None:
+        with pytest.raises(ValidationError) as test_error:
+            Nexora(api_key="nx_test_sample", environment="live")
+        assert test_error.value.code == "ENVIRONMENT_MISMATCH"
+
+        with pytest.raises(ValidationError) as live_error:
+            Nexora(api_key="nx_live_sample", environment="sandbox")
+        assert live_error.value.code == "ENVIRONMENT_MISMATCH"
+
     def test_trims_whitespace_from_api_key(self) -> None:
         client = Nexora(api_key="  nx_test_padded_key_789  ")
         assert client.api_key == "nx_test_padded_key_789"
@@ -143,6 +152,10 @@ class TestWebhookSignatureVerification:
 
         assert Nexora.verify_webhook_signature(self.payload, header, self.secret, tolerance_seconds=300) is True
 
+    def test_rejects_untimestamped_signature_by_default(self) -> None:
+        sig = hmac.new(self.secret.encode("utf-8"), self.payload.encode("utf-8"), hashlib.sha256).hexdigest()
+        assert Nexora.verify_webhook_signature(self.payload, f"v1={sig}", self.secret) is False
+
     def test_verifies_valid_bytes_payload(self) -> None:
         now = int(time.time())
         payload_bytes = self.payload.encode("utf-8")
@@ -156,7 +169,7 @@ class TestWebhookSignatureVerification:
         sig = hmac.new(self.secret.encode("utf-8"), self.payload.encode("utf-8"), hashlib.sha256).hexdigest()
         header = f"v1={sig}"
 
-        assert Nexora.verify_webhook_signature(self.payload, header, self.secret, tolerance_seconds=300) is True
+        assert Nexora.verify_webhook_signature(self.payload, header, self.secret, tolerance_seconds=0) is True
 
     def test_rejects_tampered_payload(self) -> None:
         now = int(time.time())
@@ -233,7 +246,7 @@ def mock_client() -> tuple[Nexora, dict[str, Any]]:
             "Authorization": f"Bearer {client.api_key}",
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "User-Agent": "nexorams-python/1.0.0",
+            "User-Agent": "nexorams-python/1.0.2",
         },
     )
 
@@ -251,7 +264,7 @@ class TestMockHttpTransportAndResources:
         client.organizations.list()
         last = state["last_request"]
         assert last["headers"]["authorization"] == "Bearer nx_test_mockkey123"
-        assert last["headers"]["user-agent"] == "nexorams-python/1.0.0"
+        assert last["headers"]["user-agent"] == "nexorams-python/1.0.2"
         assert last["url"].endswith("/developer/v1/organizations")
 
     def test_idempotency_key_header_injection(self, mock_client: tuple[Nexora, dict[str, Any]]) -> None:
@@ -444,6 +457,16 @@ class TestMockHttpTransportAndResources:
         updated = client.modules.update("org_1", ["school_attendance"])
         assert updated["activeFeatures"] == ["school_attendance"]
 
+        state["response_body"] = {"data": {"modules": [{"key": "school_attendance", "active": True}]}}
+        project_modules = client.modules.project_modules()
+        assert project_modules["modules"][0]["active"] is True
+        assert state["last_request"]["url"].endswith("/project/modules")
+
+        state["response_body"] = {"data": {"limit": None, "used": 4, "unlimited": True}}
+        credits = client.modules.credits()
+        assert credits["unlimited"] is True
+        assert state["last_request"]["url"].endswith("/project/module-credits")
+
     def test_plans_resource(self, mock_client: tuple[Nexora, dict[str, Any]]) -> None:
         client, state = mock_client
         state["response_status"] = 200
@@ -553,15 +576,32 @@ class TestMockHttpTransportAndResources:
         client, state = mock_client
         state["response_status"] = 200
         state["response_body"] = {
-            "data": {"totalRequests": 1500, "successCount": 1490, "clientErrorCount": 10}
+            "data": {
+                "period": "2026-09",
+                "totalRequests": 1500,
+                "successCount": 1490,
+                "clientErrorCount": 9,
+                "serverErrorCount": 1,
+                "avgLatencyMs": 120,
+                "quota": {"limit": 25000, "used": 1500, "remaining": 23500, "unlimited": False},
+                "endpoints": {"organizations": 100, "school": 1400},
+            }
         }
 
         summary = client.usage.summary(period="2026-09")
         assert summary["totalRequests"] == 1500
+        assert summary["quota"]["remaining"] == 23500
         assert "period=2026-09" in state["last_request"]["url"]
 
         state["response_body"] = {
-            "data": {"id": "proj_1", "name": "Production Project", "environment": "LIVE"}
+            "data": {
+                "id": "proj_1",
+                "name": "Production Project",
+                "slug": "production-project",
+                "status": "ACTIVE",
+                "environment": "LIVE",
+                "organizationSector": "COMPANY",
+            }
         }
         proj = client.usage.get_project()
         assert proj["name"] == "Production Project"
@@ -747,6 +787,18 @@ class TestAdditionalCoverage:
         assert "page=1" in url
         assert "limit=5" in url
 
+    def test_school_classes_list_pagination(self, mock_client: tuple[Nexora, dict[str, Any]]) -> None:
+        client, state = mock_client
+        state["response_body"] = {
+            "data": [],
+            "pagination": {"page": 3, "limit": 25, "total": 0, "totalPages": 0},
+        }
+        result = client.school.classes.list(page=3, limit=25)
+        url = state["last_request"]["url"]
+        assert "page=3" in url
+        assert "limit=25" in url
+        assert result["pagination"]["page"] == 3
+
     def test_users_list_all_query_params(self, mock_client: tuple[Nexora, dict[str, Any]]) -> None:
         client, state = mock_client
         state["response_body"] = {"data": []}
@@ -771,5 +823,3 @@ class TestAdditionalCoverage:
         res = client._http.get("custom/relative/path")
         assert res["ok"] is True
         assert state["last_request"]["url"].endswith("/developer/v1/custom/relative/path")
-
-

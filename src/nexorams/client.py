@@ -75,7 +75,7 @@ class Nexora:
             api_key: Nexora Developer API Key ('nx_test_...' for Sandbox or 'nx_live_...' for Live).
             base_url: Custom API base URL (defaults to 'https://api.nexoragms.com/developer/v1').
             timeout: Request timeout in seconds (default 30.0).
-            environment: Optional environment label ('sandbox' or 'live'). Inferred from api_key by default.
+            environment: Optional consistency assertion ('sandbox' or 'live'). The API key prefix remains authoritative.
         """
         if not api_key or not isinstance(api_key, str) or not api_key.strip():
             raise ValidationError(
@@ -93,7 +93,24 @@ class Nexora:
             )
 
         self._api_key = trimmed_key
-        self.environment = environment or ("live" if trimmed_key.startswith("nx_live_") else "sandbox")
+        inferred_environment = "live" if trimmed_key.startswith("nx_live_") else "sandbox"
+        if environment is not None:
+            requested_environment = str(environment).strip().lower()
+            if requested_environment == "test":
+                requested_environment = "sandbox"
+            if requested_environment not in {"sandbox", "live"}:
+                raise ValidationError(
+                    message="Environment must be 'sandbox' or 'live'.",
+                    code="INVALID_ENVIRONMENT",
+                    status_code=400,
+                )
+            if requested_environment != inferred_environment:
+                raise ValidationError(
+                    message=f"Environment '{requested_environment}' does not match the API key prefix.",
+                    code="ENVIRONMENT_MISMATCH",
+                    status_code=400,
+                )
+        self.environment = inferred_environment
         raw_base = base_url or DEFAULT_BASE_URL
         self.base_url = raw_base.rstrip("/")
         self.timeout = float(timeout)
