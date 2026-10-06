@@ -246,7 +246,7 @@ def mock_client() -> tuple[Nexora, dict[str, Any]]:
             "Authorization": f"Bearer {client.api_key}",
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "User-Agent": "nexorams-python/1.0.2",
+            "User-Agent": "nexorams-python/2.0.0",
         },
     )
 
@@ -264,7 +264,7 @@ class TestMockHttpTransportAndResources:
         client.organizations.list()
         last = state["last_request"]
         assert last["headers"]["authorization"] == "Bearer nx_test_mockkey123"
-        assert last["headers"]["user-agent"] == "nexorams-python/1.0.2"
+        assert last["headers"]["user-agent"] == "nexorams-python/2.0.0"
         assert last["url"].endswith("/developer/v1/organizations")
 
     def test_idempotency_key_header_injection(self, mock_client: tuple[Nexora, dict[str, Any]]) -> None:
