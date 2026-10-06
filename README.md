@@ -8,7 +8,7 @@ Programmatically build, provision, and automate multi-tenant management systems 
 
 ## Installation
 
-The official Nexora Python SDK is published on [PyPI](https://pypi.org/project/nexorams/) (stable **v1.0.2**).
+The official Nexora Python SDK is published on [PyPI](https://pypi.org/project/nexorams/) (stable **v2.0.0**).
 
 Install the package via standard module execution:
 
