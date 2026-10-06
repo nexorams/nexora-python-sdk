@@ -92,10 +92,17 @@ class HttpClient:
         query_params = _clean_params(params)
 
         req_headers: dict[str, str] = {}
+        # A Marketplace installation token (nxi_...) is bound to the organization that installed the app:
+        # never send an organization header with it (the server rejects a conflicting one).
+        is_installation = self._api_key.startswith("nxi_")
         if headers:
             for k, v in headers.items():
-                if k.lower() != "authorization":
-                    req_headers[k] = str(v)
+                lowered = k.lower()
+                if lowered == "authorization":
+                    continue
+                if is_installation and lowered in {"x-organization-id", "x-org-id"}:
+                    continue
+                req_headers[k] = str(v)
 
         if idempotency_key:
             req_headers["Idempotency-Key"] = idempotency_key.strip()
