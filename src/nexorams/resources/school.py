@@ -88,6 +88,46 @@ class _Classes:
         return self._http.post("/school/classes", json_data=data, **kwargs)
 
 
+class _ReadOnlyList:
+    """Shared paginated read-only listing for a /school/<path> endpoint."""
+
+    _path = ""
+    _filters: tuple = ()
+
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
+
+    def list(self, page: int = 1, limit: int = 20, **filters: Any) -> Dict[str, Any]:
+        """List records (paginated). Unknown filters are passed through as query params."""
+        params: Dict[str, Any] = {"page": page, "limit": limit}
+        params.update({k: v for k, v in filters.items() if v is not None})
+        return self._http.get(self._path, params=params)
+
+
+class _Teachers(_ReadOnlyList):
+    """Sub-resource for /school/teachers (requires the teachers:read scope)."""
+
+    _path = "/school/teachers"
+
+
+class _Results(_ReadOnlyList):
+    """Sub-resource for /school/results — published results only (requires results:read).
+
+    Filters: academicSession, term, studentId.
+    """
+
+    _path = "/school/results"
+
+
+class _Payments(_ReadOnlyList):
+    """Sub-resource for /school/payments (requires payments:read).
+
+    Filters: status, academicSession, term.
+    """
+
+    _path = "/school/payments"
+
+
 class SchoolResource:
     """Resource for interacting with school sector endpoints via the Developer API."""
 
@@ -95,3 +135,6 @@ class SchoolResource:
         self.students = _Students(http)
         self.attendance = _Attendance(http)
         self.classes = _Classes(http)
+        self.teachers = _Teachers(http)
+        self.results = _Results(http)
+        self.payments = _Payments(http)
