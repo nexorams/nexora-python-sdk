@@ -5,6 +5,11 @@ All notable changes to the `nexorams` Python SDK will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Nexora Cloud generic, schema-driven resources: `nexora.cloud.installations()`, `nexora.cloud.app(id).schema()`, `nexora.cloud.entities.<entity>.list/list_all/get/create/update/archive` and the shortcut `nexora.resources("<entity>")`. Entities are resolved dynamically (no per-application code). New client options `organization_id` (default `X-Organization-Id`) and `application_id`; new scopes `cloud:read`, `cloud:write`, `cloud:delete`.
+
 ## [1.0.0] - 2026-09-09
 
 ### Added
