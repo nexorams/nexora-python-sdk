@@ -26,7 +26,7 @@ from .exceptions import (
 
 DEFAULT_BASE_URL = "https://api.nexoragms.com/developer/v1"
 DEFAULT_TIMEOUT_SECONDS = 30.0
-USER_AGENT = "nexorams-python/1.0.2"
+USER_AGENT = "nexorams-python/2.0.0"
 
 
 def _clean_params(params: Optional[Mapping[str, Any]]) -> dict[str, str]:
