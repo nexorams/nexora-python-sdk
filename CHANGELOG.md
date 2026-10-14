@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-10-14
+
 ### Added
 - Nexora Cloud generic, schema-driven resources: `nexora.cloud.installations()`, `nexora.cloud.app(id).schema()`, `nexora.cloud.entities.<entity>.list/list_all/get/create/update/archive` and the shortcut `nexora.resources("<entity>")`. Entities are resolved dynamically (no per-application code). New client options `organization_id` (default `X-Organization-Id`) and `application_id`; new scopes `cloud:read`, `cloud:write`, `cloud:delete`.
 - Support for Marketplace **installation tokens** (`nxi_…`). They are organization-bound credentials issued when an organization admin installs your Marketplace app; the SDK treats them as live, exposes `is_installation_token`, never sends `X-Organization-Id` with them. Project API keys behave exactly as before.
