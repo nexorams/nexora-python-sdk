@@ -325,6 +325,29 @@ print(f"Project: {project['name']} ({project['environment']})")
 
 ---
 
+## Nexora Cloud (custom management systems)
+
+Organizations install Nexora Cloud applications and explicitly grant your developer project access to specific
+entities and actions. Your API key needs `cloud:read`, `cloud:write` and/or `cloud:delete`; the effective
+permissions are the intersection of the organization's grants and your key's scopes.
+
+```python
+nexora = Nexora(api_key=os.environ["NEXORA_API_KEY"], organization_id="org_...", application_id="...")
+
+schema = nexora.cloud.schema()                                 # entities and fields you may use
+page = nexora.cloud.entities.members.list(limit=20)
+for member in nexora.resources("members").list_all():
+    ...
+
+created = nexora.resources("members").create({"first_name": "Ada"}, idempotency_key="signup-123")
+nexora.resources("members").update(created["id"], {"plan": "gold"})
+nexora.resources("members").archive(created["id"])             # soft delete; data is never hard-deleted
+
+nexora.resources("members").events()["created"]                # "cloud.members.created" (webhook event)
+```
+
+Sensitive fields are never returned or writable through the API. TEST keys can use your own application's sandbox.
+
 ## Error Handling
 
 All API transport and validation errors raise structured `NexoraError` exceptions with HTTP status codes, machine-readable error codes, and unique correlation request IDs for support troubleshooting.

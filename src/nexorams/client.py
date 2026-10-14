@@ -23,6 +23,7 @@ from .resources.hospital import HospitalResource
 from .resources.hotel import HotelResource
 from .resources.pharmacy import PharmacyResource
 from .resources.company import CompanyResource
+from .resources.cloud import CloudEntityClient, CloudResource
 
 
 def _mask_api_key(key: str) -> str:
@@ -68,6 +69,8 @@ class Nexora:
         base_url: Optional[str] = None,
         timeout: float = DEFAULT_TIMEOUT_SECONDS,
         environment: Optional[str] = None,
+        organization_id: Optional[str] = None,
+        application_id: Optional[str] = None,
     ) -> None:
         """Initialize the Nexora client.
 
@@ -76,6 +79,8 @@ class Nexora:
             base_url: Custom API base URL (defaults to 'https://api.nexoragms.com/developer/v1').
             timeout: Request timeout in seconds (default 30.0).
             environment: Optional consistency assertion ('sandbox' or 'live'). The API key prefix remains authoritative.
+            organization_id: Default organization sent as X-Organization-Id (tenant selector; access is verified server-side).
+            application_id: Default Nexora Cloud application for ``nexora.cloud.entities`` and ``nexora.resources()``.
         """
         if not api_key or not isinstance(api_key, str) or not api_key.strip():
             raise ValidationError(
@@ -131,6 +136,7 @@ class Nexora:
             api_key=self._api_key,
             base_url=self.base_url,
             timeout=self.timeout,
+            organization_id=organization_id,
         )
 
         # Initialize canonical public resources
@@ -143,6 +149,7 @@ class Nexora:
         self.webhooks = WebhooksResource(self._http)
         self.deliveries = WebhookDeliveriesResource(self._http)
         self.usage = UsageResource(self._http)
+        self.cloud = CloudResource(self._http, application_id)
 
         # Sector-specific resources
         self.school = SchoolResource(self._http)
@@ -150,6 +157,10 @@ class Nexora:
         self.hotel = HotelResource(self._http)
         self.pharmacy = PharmacyResource(self._http)
         self.company = CompanyResource(self._http)
+
+    def resources(self, entity_key: str, application_id: Optional[str] = None) -> CloudEntityClient:
+        """Generic dynamic resource, e.g. ``nexora.resources("members").list()``."""
+        return self.cloud.entity(entity_key, application_id)
 
     @property
     def api_key(self) -> str:

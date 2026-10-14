@@ -14,6 +14,7 @@ from .hospital import HospitalResource
 from .hotel import HotelResource
 from .pharmacy import PharmacyResource
 from .company import CompanyResource
+from .cloud import CloudApplicationClient, CloudEntityClient, CloudResource
 
 __all__ = [
     "OrganizationsResource",
@@ -30,5 +31,8 @@ __all__ = [
     "HotelResource",
     "PharmacyResource",
     "CompanyResource",
+    "CloudResource",
+    "CloudApplicationClient",
+    "CloudEntityClient",
 ]
 

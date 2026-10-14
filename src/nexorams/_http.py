@@ -51,8 +51,10 @@ class HttpClient:
         api_key: str,
         base_url: Optional[str] = None,
         timeout: float = DEFAULT_TIMEOUT_SECONDS,
+        organization_id: Optional[str] = None,
     ) -> None:
         self._api_key = api_key.strip()
+        self.organization_id = organization_id.strip() if organization_id else None
         raw_base = base_url or DEFAULT_BASE_URL
         self._base_url = raw_base.rstrip("/")
         self._default_timeout = float(timeout)
@@ -106,6 +108,10 @@ class HttpClient:
 
         if idempotency_key:
             req_headers["Idempotency-Key"] = idempotency_key.strip()
+
+        # Default tenant selector (an explicit per-call X-Organization-Id header wins).
+        if self.organization_id and not is_installation and not any(k.lower() == "x-organization-id" for k in req_headers):
+            req_headers["X-Organization-Id"] = self.organization_id
 
         req_timeout = (
             httpx.Timeout(float(timeout)) if timeout is not None else httpx.Timeout(self._default_timeout)

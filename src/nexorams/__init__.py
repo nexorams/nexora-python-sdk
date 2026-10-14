@@ -32,6 +32,7 @@ from .resources.hospital import HospitalResource
 from .resources.hotel import HotelResource
 from .resources.pharmacy import PharmacyResource
 from .resources.company import CompanyResource
+from .resources.cloud import CloudApplicationClient, CloudEntityClient, CloudResource
 from .types import LimitSummary, ModuleCreditSummary, PlanLimits
 
 __all__ = [
@@ -61,6 +62,9 @@ __all__ = [
     "HotelResource",
     "PharmacyResource",
     "CompanyResource",
+    "CloudResource",
+    "CloudApplicationClient",
+    "CloudEntityClient",
     "LimitSummary",
     "PlanLimits",
     "ModuleCreditSummary",
