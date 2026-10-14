@@ -85,15 +85,26 @@ class Nexora:
             )
 
         trimmed_key = api_key.strip()
-        if not trimmed_key.startswith("nx_test_") and not trimmed_key.startswith("nx_live_"):
+        # Marketplace apps authenticate with an installation token (nxi_...) issued to ONE organization
+        # when an admin installs the app. It is a different credential from a project API key.
+        is_installation_token = trimmed_key.startswith("nxi_")
+        if (
+            not is_installation_token
+            and not trimmed_key.startswith("nx_test_")
+            and not trimmed_key.startswith("nx_live_")
+        ):
             raise ValidationError(
-                message="Invalid API key prefix. Expected 'nx_test_' for sandbox or 'nx_live_' for live.",
+                message=(
+                    "Invalid API key prefix. Expected 'nx_test_' for sandbox, 'nx_live_' for live, "
+                    "or 'nxi_' for a Marketplace installation token."
+                ),
                 code="INVALID_API_KEY_FORMAT",
                 status_code=400,
             )
 
         self._api_key = trimmed_key
-        inferred_environment = "live" if trimmed_key.startswith("nx_live_") else "sandbox"
+        self.is_installation_token = is_installation_token
+        inferred_environment = "sandbox" if trimmed_key.startswith("nx_test_") else "live"
         if environment is not None:
             requested_environment = str(environment).strip().lower()
             if requested_environment == "test":
