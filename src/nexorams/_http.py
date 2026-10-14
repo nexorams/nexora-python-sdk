@@ -26,7 +26,7 @@ from .exceptions import (
 
 DEFAULT_BASE_URL = "https://api.nexoragms.com/developer/v1"
 DEFAULT_TIMEOUT_SECONDS = 30.0
-USER_AGENT = "nexorams-python/1.0.2"
+USER_AGENT = "nexorams-python/2.0.0"
 
 
 def _clean_params(params: Optional[Mapping[str, Any]]) -> dict[str, str]:
@@ -94,16 +94,23 @@ class HttpClient:
         query_params = _clean_params(params)
 
         req_headers: dict[str, str] = {}
+        # A Marketplace installation token (nxi_...) is bound to the organization that installed the app:
+        # never send an organization header with it (the server rejects a conflicting one).
+        is_installation = self._api_key.startswith("nxi_")
         if headers:
             for k, v in headers.items():
-                if k.lower() != "authorization":
-                    req_headers[k] = str(v)
+                lowered = k.lower()
+                if lowered == "authorization":
+                    continue
+                if is_installation and lowered in {"x-organization-id", "x-org-id"}:
+                    continue
+                req_headers[k] = str(v)
 
         if idempotency_key:
             req_headers["Idempotency-Key"] = idempotency_key.strip()
 
         # Default tenant selector (an explicit per-call X-Organization-Id header wins).
-        if self.organization_id and not any(k.lower() == "x-organization-id" for k in req_headers):
+        if self.organization_id and not is_installation and not any(k.lower() == "x-organization-id" for k in req_headers):
             req_headers["X-Organization-Id"] = self.organization_id
 
         req_timeout = (

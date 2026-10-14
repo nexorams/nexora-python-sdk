@@ -246,7 +246,7 @@ def mock_client() -> tuple[Nexora, dict[str, Any]]:
             "Authorization": f"Bearer {client.api_key}",
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "User-Agent": "nexorams-python/1.0.2",
+            "User-Agent": "nexorams-python/2.0.0",
         },
     )
 
@@ -264,7 +264,7 @@ class TestMockHttpTransportAndResources:
         client.organizations.list()
         last = state["last_request"]
         assert last["headers"]["authorization"] == "Bearer nx_test_mockkey123"
-        assert last["headers"]["user-agent"] == "nexorams-python/1.0.2"
+        assert last["headers"]["user-agent"] == "nexorams-python/2.0.0"
         assert last["url"].endswith("/developer/v1/organizations")
 
     def test_idempotency_key_header_injection(self, mock_client: tuple[Nexora, dict[str, Any]]) -> None:
@@ -823,3 +823,40 @@ class TestAdditionalCoverage:
         res = client._http.get("custom/relative/path")
         assert res["ok"] is True
         assert state["last_request"]["url"].endswith("/developer/v1/custom/relative/path")
+
+
+class TestInstallationTokens:
+    """Marketplace installation tokens (nxi_...) are organization-bound credentials."""
+
+    TOKEN = "nxi_" + "a" * 64
+
+    def test_accepts_installation_token_as_live(self) -> None:
+        client = Nexora(api_key=self.TOKEN)
+        assert client.is_installation_token is True
+        assert client.environment == "live"
+        assert Nexora(api_key="nx_live_abc").is_installation_token is False
+
+    def test_rejects_unknown_prefix(self) -> None:
+        with pytest.raises(ValidationError) as exc:
+            Nexora(api_key="sk_live_abc")
+        assert exc.value.code == "INVALID_API_KEY_FORMAT"
+
+    def test_never_sends_organization_header(self) -> None:
+        seen: dict[str, Any] = {}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.update({k.lower(): v for k, v in request.headers.items()})
+            return httpx.Response(200, json={"data": []})
+
+        from nexorams._http import HttpClient
+
+        http = HttpClient(api_key=self.TOKEN, base_url="https://api.test/developer/v1")
+        http._session = httpx.Client(
+            base_url="https://api.test/developer/v1",
+            headers=http._session.headers,
+            transport=httpx.MockTransport(handler),
+        )
+        http.request("GET", "/school/students", headers={"X-Organization-Id": "org_attacker", "X-Trace": "1"})
+        assert "x-organization-id" not in seen
+        assert seen.get("x-trace") == "1"
+        assert seen["authorization"] == f"Bearer {self.TOKEN}"
