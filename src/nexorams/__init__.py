@@ -4,7 +4,7 @@ Build, provision, and automate multi-tenant management systems across sectors
 (Schools, Hospitals, Hotels, Pharmacies, Enterprises) with the Nexora Developer API.
 """
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 
 from .client import Nexora, NexoraClient
 from .exceptions import (
